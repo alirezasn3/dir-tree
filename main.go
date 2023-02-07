@@ -1,9 +1,9 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"os"
+	"strconv"
 )
 
 var emptyDirs []string
@@ -41,7 +41,13 @@ func isAdmin() bool {
 	return err == nil
 }
 
-func listEntries(path string, depth int) float64 {
+func listEntries(path string, initialDepth int, maxDepth int) float64 {
+	if maxDepth > -1 {
+		if initialDepth/2 >= maxDepth {
+			return 0
+		}
+	}
+
 	path = path + "/"
 
 	entries, err := os.ReadDir(path)
@@ -49,37 +55,37 @@ func listEntries(path string, depth int) float64 {
 	var size float64 = 0
 	var s float64
 
-	depthMap[depth] = false
+	depthMap[initialDepth] = false
 	if len(entries) > 1 {
-		depthMap[depth] = true
+		depthMap[initialDepth] = true
 	}
 
 	if err != nil {
 		errors = append(errors, err.Error())
 	}
 
-	if depth == 0 {
+	if initialDepth == 0 {
 		fmt.Println(".")
 	}
 
 	for i, e := range entries {
 		if e.IsDir() {
 			if i == len(entries)-1 {
-				depthMap[depth] = false
-				if isDirEmpty(path + "/" + e.Name()) {
-					fmt.Printf("%s┗%s /%s\n", generateSpaces(depth), generateDashes(2), e.Name())
+				depthMap[initialDepth] = false
+				if isDirEmpty(path+e.Name()) || initialDepth/2 == maxDepth-1 {
+					fmt.Printf("%s┗%s /%s\n", generateSpaces(initialDepth), generateDashes(2), e.Name())
 				} else {
-					fmt.Printf("%s┗%s┓ /%s\n", generateSpaces(depth), generateDashes(1), e.Name())
+					fmt.Printf("%s┗%s┓ /%s\n", generateSpaces(initialDepth), generateDashes(1), e.Name())
 				}
 			} else {
-				if isDirEmpty(path + e.Name()) {
-					fmt.Printf("%s┣%s /%s\n", generateSpaces(depth), generateDashes(2), e.Name())
+				if isDirEmpty(path+e.Name()) || initialDepth/2 == maxDepth-1 {
+					fmt.Printf("%s┣%s /%s\n", generateSpaces(initialDepth), generateDashes(2), e.Name())
 				} else {
-					fmt.Printf("%s┣%s┓ /%s\n", generateSpaces(depth), generateDashes(1), e.Name())
+					fmt.Printf("%s┣%s┓ /%s\n", generateSpaces(initialDepth), generateDashes(1), e.Name())
 				}
 			}
 
-			size += listEntries(path+e.Name(), depth+2)
+			size += listEntries(path+e.Name(), initialDepth+2, maxDepth)
 		} else {
 			info, _ := e.Info()
 			s = float64(info.Size())
@@ -90,9 +96,9 @@ func listEntries(path string, depth int) float64 {
 			}
 
 			if i == len(entries)-1 {
-				fmt.Printf("%s┗%s %s [%.1f KB]\n", generateSpaces(depth), generateDashes(2), e.Name(), s/1024)
+				fmt.Printf("%s┗%s %s [%.1f KB]\n", generateSpaces(initialDepth), generateDashes(2), e.Name(), s/1024)
 			} else {
-				fmt.Printf("%s┣%s %s [%.1f KB]\n", generateSpaces(depth), generateDashes(2), e.Name(), s/1024)
+				fmt.Printf("%s┣%s %s [%.1f KB]\n", generateSpaces(initialDepth), generateDashes(2), e.Name(), s/1024)
 			}
 		}
 	}
@@ -105,26 +111,30 @@ func listEntries(path string, depth int) float64 {
 }
 
 func main() {
+	fmt.Println(os.Args)
 	if !isAdmin() {
 		fmt.Println("Please run the program as an administrator for better results")
 	}
 
-	var path string
+	path, _ := os.Getwd()
+	maxDepth := -1
 
 	if len(os.Args) > 1 {
 		path = os.Args[1]
-	} else {
-		path, _ = os.Getwd()
+	}
+	if len(os.Args) > 2 {
+		maxDepth, _ = strconv.Atoi(os.Args[2])
 	}
 
-	totalSize := listEntries(path, 0)
+	totalSize := listEntries(path, 0, maxDepth)
 
-	fmt.Printf("\nsize of \"%s\" is %.2f MB\n", path, totalSize/1024000)
+	if maxDepth == -1 {
+		fmt.Printf("\nsize of \"%s\" is %.2f MB\n", path, totalSize/1024000)
+	}
 	fmt.Printf("\nfound %d empty directories\n", len(emptyDirs))
 	fmt.Printf("\nfound %d empty files\n", len(emptyFiles))
 	fmt.Printf("\n%d errors encountered\n", len(errors))
 
 	fmt.Print("\npress enter to exit...")
-	reader := bufio.NewReader(os.Stdin)
-	reader.ReadByte()
+	fmt.Scanln()
 }

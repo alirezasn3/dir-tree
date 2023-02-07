@@ -16,6 +16,18 @@ Or run the application without any arguments to scan the current directory.
   dir-tree.exe
 ```
 
+You can use relative paths too
+
+```
+  dir-tree.exe ./
+```
+
+The second argument is depth. Use it to specify how deep the tree should go.
+
+```
+  dir-tree.exe C:/Users/Joel/ 2
+```
+
 You can also drag and drop folders in the application.
 
 ## Sample output
