@@ -1,3 +1,6 @@
+# dir-tree
+
+You can use this application to draw the directory tree in terminal window. Only tested on widnows.
 
 ## How to run
 
