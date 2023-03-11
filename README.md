@@ -1,36 +1,36 @@
-# dir-tree
+#dir-tree
 
 You can use this application to draw the directory tree in terminal window. Only tested on widnows.
 
-## How to run
+##How to run
 
 Run the application with the directory path as the first argument.
 
 ```
-  dir-tree.exe C:/Users/Joel/
+dir-tree.exe C:/Users/Joel/
 ```
 
 Or run the application without any arguments to scan the current directory.
 
 ```
-  dir-tree.exe
+dir-tree.exe
 ```
 
 You can use relative paths too
 
 ```
-  dir-tree.exe ./
+dir-tree.exe ./
 ```
 
 The second argument is depth. Use it to specify how deep the tree should go.
 
 ```
-  dir-tree.exe C:/Users/Joel/ 2
+dir-tree.exe C:/Users/Joel/ 2
 ```
 
 You can also drag and drop folders in the application.
 
-## Sample output
+##Sample output
 
 ```
 PS C:\dev\dir-tree> .\dir-tree.exe C:/Users/Alireza/Documents/
